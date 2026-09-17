@@ -26,8 +26,13 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      # packages: '' отключает установку экшеном по умолчанию пакета 'tools' -
+      # Google убрал его из репозитория SDK, из-за чего шаг падает с exit code 1
+      # ещё до того, как отработает следующий шаг с явным списком пакетов.
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: ''
 
       - name: Install Android SDK packages
         run: |
