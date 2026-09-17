@@ -14,20 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Если в корне репозитория лежит zip-архив проекта (например mapp-project-fixed.zip),
-      # он будет автоматически распакован сюда же. Если проект уже лежит распакованным
-      # (есть папка app/), этот шаг просто ничего не сделает.
-      - name: Unzip project archive (if present)
-        run: |
-          shopt -s nullglob
-          zips=(*.zip)
-          if [ ${#zips[@]} -gt 0 ]; then
-            echo "Найден архив: ${zips[0]}, распаковываю..."
-            unzip -o "${zips[0]}" -d .
-          else
-            echo "Zip-архив не найден, использую файлы репозитория как есть."
-          fi
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
