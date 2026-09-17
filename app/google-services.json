@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "220303278468",
+    "project_id": "alfanomy-android",
+    "storage_bucket": "alfanomy-android.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:220303278468:android:43e19f9ca2a02bc77a5dd1",
+        "android_client_info": {
+          "package_name": "ru.alfanomy.mapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFOPIMBdevC3s8psmCAJVNU1BnEIngv7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
