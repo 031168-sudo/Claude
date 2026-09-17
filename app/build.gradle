@@ -3,6 +3,9 @@ plugins { id 'com.android.application'; id 'com.google.gms.google-services' }
 android { namespace 'ru.alfanomy.mapp'; compileSdk 35
     defaultConfig { applicationId 'ru.alfanomy.mapp'; minSdk 23; targetSdk 34; versionCode 1; versionName '1.0' }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+    // AGP 8 больше не генерирует BuildConfig по умолчанию - а MainActivity
+    // использует BuildConfig.DEBUG, чтобы не включать отладку WebView в релизе.
+    buildFeatures { buildConfig true }
     signingConfigs {
         debug {
             storeFile file('../keystore/debug.keystore')
