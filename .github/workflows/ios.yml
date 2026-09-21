@@ -12,6 +12,10 @@ jobs:
     defaults:
       run:
         working-directory: ios
+    env:
+      # 'secrets' нельзя использовать напрямую в 'if:' шага - только через
+      # промежуточную переменную окружения уровня джобы (см. android.yml).
+      HAS_IOS_SIGNING: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -21,10 +25,8 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      # Пока собираем только для симулятора - подписи ещё нет, а для
-      # симулятора она не нужна. Реальный подписанный билд для iPhone/TestFlight
-      # добавим отдельным шагом, когда будут готовы сертификат и профиль
-      # из Apple Developer.
+      # Собираем для симулятора всегда - подписи для этого не нужно, это
+      # быстрая проверка, что проект вообще компилируется.
       - name: Build for iOS Simulator
         run: |
           xcodebuild build \
@@ -33,3 +35,70 @@ jobs:
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO
+
+      # Боевой подписанный .ipa собирается, только если в репозитории заведены
+      # секреты IOS_DISTRIBUTION_P12_BASE64 / IOS_DISTRIBUTION_P12_PASSWORD /
+      # IOS_PROVISIONING_PROFILE_BASE64 (Settings -> Secrets and variables -> Actions).
+      # Без них следующие шаги просто пропускаются, симуляторная сборка не страдает.
+      - name: Import signing certificate and provisioning profile
+        if: ${{ env.HAS_IOS_SIGNING == 'true' }}
+        env:
+          IOS_DISTRIBUTION_P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 }}
+          IOS_DISTRIBUTION_P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_P12_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          P12_PATH=$RUNNER_TEMP/distribution.p12
+          PROFILE_PATH=$RUNNER_TEMP/profile.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/signing.keychain-db
+          KEYCHAIN_PASSWORD=$(uuidgen)
+
+          # tr убирает любые случайные переносы строк/пробелы, которые могли
+          # попасть в значение секрета при копировании длинной base64-строки
+          # вручную через веб-форму GitHub - иначе base64 -d молча портит вывод
+          # и security потом ругается "Unknown format in import".
+          echo -n "$IOS_DISTRIBUTION_P12_BASE64" | tr -d '[:space:]' | base64 -d -o "$P12_PATH"
+          echo -n "$IOS_PROVISIONING_PROFILE_BASE64" | tr -d '[:space:]' | base64 -d -o "$PROFILE_PATH"
+          echo "Decoded p12 size: $(wc -c < "$P12_PATH") bytes"
+          echo "Decoded profile size: $(wc -c < "$PROFILE_PATH") bytes"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$P12_PATH" -k "$KEYCHAIN_PATH" -P "$IOS_DISTRIBUTION_P12_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed 's/"//g')
+
+          PROFILES_DIR=~/Library/MobileDevice/Provisioning\ Profiles
+          mkdir -p "$PROFILES_DIR"
+          PROFILE_UUID=$(security cms -D -i "$PROFILE_PATH" | plutil -extract UUID xml1 -o - - | sed -n 's/.*<string>\(.*\)<\/string>.*/\1/p')
+          cp "$PROFILE_PATH" "$PROFILES_DIR/$PROFILE_UUID.mobileprovision"
+
+      # Подпись (CODE_SIGN_STYLE/IDENTITY/PROVISIONING_PROFILE_SPECIFIER) задана
+      # в project.yml для Release-конфигурации таргета Alfanomy, а не здесь -
+      # см. комментарий в project.yml, почему это важно для SPM-пакетов.
+      - name: Archive signed app
+        if: ${{ env.HAS_IOS_SIGNING == 'true' }}
+        run: |
+          xcodebuild archive \
+            -project Alfanomy.xcodeproj \
+            -scheme Alfanomy \
+            -sdk iphoneos \
+            -archivePath "$RUNNER_TEMP/Alfanomy.xcarchive" \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }}
+
+      - name: Export signed IPA
+        if: ${{ env.HAS_IOS_SIGNING == 'true' }}
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Alfanomy.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist ExportOptions.plist
+
+      - name: Upload signed IPA
+        if: ${{ env.HAS_IOS_SIGNING == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Alfanomy-ipa
+          path: ${{ runner.temp }}/export/*.ipa
+          if-no-files-found: error

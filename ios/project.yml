@@ -31,3 +31,15 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_VERSION: "5.0"
+      # Ручная подпись только для Release-конфигурации самого таргета Alfanomy.
+      # Если задать это через xcodebuild -X на командной строке, оно применяется
+      # ко ВСЕМ таргетам сборки разом, включая библиотеки Firebase/Google (SPM) -
+      # а библиотеки в принципе не поддерживают provisioning profile, из-за чего
+      # archive падал с "does not support provisioning profiles". Задавая это
+      # здесь, в настройках именно этого таргета, SPM-пакеты не затрагиваются.
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Apple Distribution"
+          DEVELOPMENT_TEAM: 6KFX74C58U
+          PROVISIONING_PROFILE_SPECIFIER: "Alfanomy App Store"
