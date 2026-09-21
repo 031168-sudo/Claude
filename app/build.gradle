@@ -3,6 +3,9 @@ plugins { id 'com.android.application'; id 'com.google.gms.google-services' }
 android { namespace 'ru.alfanomy.mapp'; compileSdk 35
     defaultConfig { applicationId 'ru.alfanomy.mapp'; minSdk 23; targetSdk 34; versionCode 1; versionName '1.0' }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+    // AGP 8 больше не генерирует BuildConfig по умолчанию - а MainActivity
+    // использует BuildConfig.DEBUG, чтобы не включать отладку WebView в релизе.
+    buildFeatures { buildConfig true }
     signingConfigs {
         debug {
             storeFile file('../keystore/debug.keystore')
@@ -10,9 +13,21 @@ android { namespace 'ru.alfanomy.mapp'; compileSdk 35
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // Заполняется в CI из GitHub Actions secrets (см. .github/workflows/android.yml).
+        // Сам keystore в репозиторий не кладём - только эти переменные окружения.
+        release {
+            storeFile file(System.getenv('RELEASE_KEYSTORE_PATH') ?: '../keystore/release.keystore')
+            storePassword System.getenv('RELEASE_KEYSTORE_PASSWORD')
+            keyAlias System.getenv('RELEASE_KEY_ALIAS')
+            keyPassword System.getenv('RELEASE_KEY_PASSWORD')
+        }
     }
     buildTypes {
         debug { signingConfig signingConfigs.debug }
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
     }
 }
 

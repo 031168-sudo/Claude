@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
-        WebView.setWebContentsDebuggingEnabled(true);
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
         setContentView(webView);
         webView.loadUrl("file:///android_asset/index.html");
 
