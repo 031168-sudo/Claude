@@ -74,6 +74,9 @@ jobs:
           PROFILE_UUID=$(security cms -D -i "$PROFILE_PATH" | plutil -extract UUID xml1 -o - - | sed -n 's/.*<string>\(.*\)<\/string>.*/\1/p')
           cp "$PROFILE_PATH" "$PROFILES_DIR/$PROFILE_UUID.mobileprovision"
 
+      # Подпись (CODE_SIGN_STYLE/IDENTITY/PROVISIONING_PROFILE_SPECIFIER) задана
+      # в project.yml для Release-конфигурации таргета Alfanomy, а не здесь -
+      # см. комментарий в project.yml, почему это важно для SPM-пакетов.
       - name: Archive signed app
         if: ${{ env.HAS_IOS_SIGNING == 'true' }}
         run: |
@@ -82,10 +85,6 @@ jobs:
             -scheme Alfanomy \
             -sdk iphoneos \
             -archivePath "$RUNNER_TEMP/Alfanomy.xcarchive" \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            DEVELOPMENT_TEAM=6KFX74C58U \
-            PROVISIONING_PROFILE_SPECIFIER="Alfanomy App Store" \
             CURRENT_PROJECT_VERSION=${{ github.run_number }}
 
       - name: Export signed IPA
