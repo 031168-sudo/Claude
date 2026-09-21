@@ -43,8 +43,10 @@ jobs:
           yes | sdkmanager --licenses
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
+      # github.run_number растёт на 1 при каждом запуске этого workflow - его и
+      # используем как versionCode, чтобы номер сборки не нужно было бампать руками.
       - name: Build debug APK
-        run: gradle assembleDebug --no-daemon
+        run: gradle assembleDebug --no-daemon -PappVersionCode=${{ github.run_number }}
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -71,7 +73,7 @@ jobs:
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        run: gradle assembleRelease --no-daemon
+        run: gradle assembleRelease --no-daemon -PappVersionCode=${{ github.run_number }}
 
       - name: Upload release APK
         if: ${{ env.HAS_RELEASE_SECRET == 'true' }}
