@@ -4,3 +4,9 @@ keystore/release.keystore
 /app/build/
 .gradle/
 local.properties
+
+# iOS - .xcodeproj генерируется из ios/project.yml через XcodeGen (см. .github/workflows/ios.yml)
+ios/*.xcodeproj
+ios/DerivedData/
+*.p12
+*.mobileprovision
