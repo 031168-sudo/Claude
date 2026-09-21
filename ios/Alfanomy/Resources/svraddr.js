@@ -1,0 +1,1 @@
+﻿var serverURL = "http://m.alfanomy.ru/alfa-sp/mapp-1.2/server/index.jss";

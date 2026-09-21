@@ -1,0 +1,32 @@
+name: Alfanomy
+options:
+  bundleIdPrefix: ru.alfanomy
+  deploymentTarget:
+    iOS: "13.0"
+packages:
+  FirebaseSDK:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: 11.0.0
+targets:
+  Alfanomy:
+    type: application
+    platform: iOS
+    sources:
+      - path: Alfanomy
+        excludes:
+          - "Resources/**"
+    resources:
+      - path: Alfanomy/Resources
+      - path: Alfanomy/Assets.xcassets
+    dependencies:
+      - package: FirebaseSDK
+        product: FirebaseMessaging
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ru.alfanomy.mapp
+        INFOPLIST_FILE: Alfanomy/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
