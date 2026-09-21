@@ -52,8 +52,14 @@ jobs:
           KEYCHAIN_PATH=$RUNNER_TEMP/signing.keychain-db
           KEYCHAIN_PASSWORD=$(uuidgen)
 
-          echo "$IOS_DISTRIBUTION_P12_BASE64" | base64 -d -o "$P12_PATH"
-          echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 -d -o "$PROFILE_PATH"
+          # tr убирает любые случайные переносы строк/пробелы, которые могли
+          # попасть в значение секрета при копировании длинной base64-строки
+          # вручную через веб-форму GitHub - иначе base64 -d молча портит вывод
+          # и security потом ругается "Unknown format in import".
+          echo -n "$IOS_DISTRIBUTION_P12_BASE64" | tr -d '[:space:]' | base64 -d -o "$P12_PATH"
+          echo -n "$IOS_PROVISIONING_PROFILE_BASE64" | tr -d '[:space:]' | base64 -d -o "$PROFILE_PATH"
+          echo "Decoded p12 size: $(wc -c < "$P12_PATH") bytes"
+          echo "Decoded profile size: $(wc -c < "$PROFILE_PATH") bytes"
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
