@@ -1,7 +1,17 @@
 plugins { id 'com.android.application'; id 'com.google.gms.google-services' }
 
 android { namespace 'ru.alfanomy.mapp'; compileSdk 35
-    defaultConfig { applicationId 'ru.alfanomy.mapp'; minSdk 23; targetSdk 34; versionCode 1; versionName '1.0' }
+    // versionName - "человеческая" версия для карточки в магазине, меняем её сами,
+    // когда хотим показать пользователю, что вышло заметное обновление (1.0 -> 1.1 -> 2.0).
+    // versionCode - то, что реально требует магазин: у каждой загруженной сборки он должен
+    // быть строго больше предыдущей. Чтобы про это не думать и не забывать бампать руками,
+    // CI сам передаёт сюда номер сборки GitHub Actions (appVersionCode); без него (например,
+    // при локальной сборке) используется 1, как и раньше.
+    defaultConfig {
+        applicationId 'ru.alfanomy.mapp'; minSdk 23; targetSdk 34
+        versionCode (project.findProperty('appVersionCode') ?: '1').toInteger()
+        versionName '1.0'
+    }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
     // AGP 8 больше не генерирует BuildConfig по умолчанию - а MainActivity
     // использует BuildConfig.DEBUG, чтобы не включать отладку WebView в релизе.
