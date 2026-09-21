@@ -18,6 +18,7 @@ targets:
     resources:
       - path: Alfanomy/Resources
       - path: Alfanomy/Assets.xcassets
+      - path: Alfanomy/GoogleService-Info.plist
     dependencies:
       - package: FirebaseSDK
         product: FirebaseMessaging
