@@ -45,8 +45,9 @@ jobs:
       # выпадала из-за пересечения путей с sources - см. project.yml).
       - name: Inspect generated Xcode project
         run: |
-          echo "--- Resources build phase section ---"
-          grep -n "PBXResourcesBuildPhase" -A 10 Alfanomy.xcodeproj/project.pbxproj
+          echo "--- full generated project.pbxproj ---"
+          cat Alfanomy.xcodeproj/project.pbxproj
+          true
 
       # Собираем для симулятора всегда - подписи для этого не нужно, это
       # быстрая проверка, что проект вообще компилируется.
