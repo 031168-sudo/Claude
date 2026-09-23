@@ -4,7 +4,7 @@ import FirebaseMessaging
 import UserNotifications
 
 // Аналог MainActivity.java + MyFirebaseMessagingService.java из Android-версии:
-// один WKWebView на весь экран, показывающий тот же веб-апп из Resources/,
+// один WKWebView на весь экран, показывающий тот же веб-апп из web/,
 // плюс push-токен, который прокидывается в JS-модель через registerPushToken.
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {

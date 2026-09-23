@@ -19,24 +19,21 @@ targets:
     dependencies:
       - package: FirebaseSDK
         product: FirebaseMessaging
-    # Веб-приложение (Resources/, 273 файла: index.html, code.js, картинки,
-    # вложенные папки) копируется отдельным shell-скриптом, а не через
-    # декларативный "resources: - path: Resources, type: folder" -
-    # последнее в установленной версии XcodeGen (2.46.0) тихо отбрасывало
-    # всю запись целиком без единой ошибки (подтверждено печатью
-    # сгенерированного project.pbxproj и прямым осмотром собранного .app в
-    # CI - несмотря на type: folder, Resources ни разу не появилась в
-    # бандле, хотя соседние resources-записи без type: folder работали).
-    # cp -R гарантированно сохраняет структуру Resources/... внутри
-    # бандла, которую ищет WebViewController.swift.
+    # Веб-приложение (web/: index.html, code.js, картинки, вложенные папки)
+    # копируется в бандл скриптом как папка web/ - её ищет
+    # WebViewController.swift. Папку НЕЛЬЗЯ называть "Resources": это имя
+    # зарезервировано структурой бандла, codesign на ней падает с "code
+    # object is not signed at all", а декларативный type: folder с этим
+    # именем молча выпадал из сборки.
     postBuildScripts:
-      - name: Copy web app Resources
+      - name: Copy web app
+        basedOnDependencyAnalysis: false
         script: |
           set -e
-          DEST="$CODESIGNING_FOLDER_PATH/Resources"
+          DEST="$CODESIGNING_FOLDER_PATH/web"
           rm -rf "$DEST"
           mkdir -p "$DEST"
-          cp -R "$SRCROOT/Resources/." "$DEST/"
+          cp -R "$SRCROOT/web/." "$DEST/"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.alfanomy.mapp

@@ -1,7 +1,9 @@
 # Alfanomy (iOS)
 
 WKWebView-обёртка, показывающая тот же веб-апп, что и Android-версия
-(`Alfanomy/Resources` — копия `app/src/main/assets` из Android-проекта).
+(`web/` — копия `app/src/main/assets` из Android-проекта; в бандл копируется
+скриптом сборки как папка `web/`. Не переименовывать в `Resources` — это имя
+ломает подпись iOS-приложения).
 
 ## Сборка
 

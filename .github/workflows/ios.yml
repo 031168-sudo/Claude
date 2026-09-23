@@ -40,12 +40,6 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      # Дешёвая проверка на будущее: Resources должна попадать в Copy Bundle
-      # Resources как отдельная запись (раньше полностью выпадала из-за
-      # пересечения путей между sources и resources - см. project.yml).
-      - name: Inspect generated Xcode project
-        run: grep -n "Resources" Alfanomy.xcodeproj/project.pbxproj || true
-
       # Собираем для симулятора всегда - подписи для этого не нужно, это
       # быстрая проверка, что проект вообще компилируется.
       - name: Build for iOS Simulator
@@ -108,20 +102,14 @@ jobs:
             -archivePath "$RUNNER_TEMP/Alfanomy.xcarchive" \
             CURRENT_PROJECT_VERSION=${{ github.run_number }}
 
-      # Диагностика белого экрана на устройстве: печатаем в лог CI, что
-      # реально лежит внутри собранного .app - в частности, существует ли
-      # папка Resources/ и есть ли в ней index.html, вместо того чтобы
-      # гадать по симптомам с телефона.
-      - name: Inspect built app bundle
+      # Без web/index.html приложение на устройстве показывает только белый
+      # экран, а сборка при этом проходит "успешно" - валим CI явно.
+      - name: Verify web app is bundled
         if: ${{ env.HAS_IOS_SIGNING == 'true' }}
         run: |
           APP_PATH="$RUNNER_TEMP/Alfanomy.xcarchive/Products/Applications/Alfanomy.app"
-          echo "--- top level of Alfanomy.app ---"
-          ls -la "$APP_PATH"
-          echo "--- Resources (if it exists as a real subfolder) ---"
-          ls -la "$APP_PATH/Resources" 2>/dev/null || echo "NO Resources subfolder found"
-          echo "--- looking for index.html anywhere in the bundle ---"
-          find "$APP_PATH" -iname "index.html"
+          test -f "$APP_PATH/web/index.html" || { echo "web/index.html missing from app bundle"; ls -la "$APP_PATH"; exit 1; }
+          echo "web/ bundled: $(find "$APP_PATH/web" -type f | wc -l) files"
 
       - name: Export signed IPA
         if: ${{ env.HAS_IOS_SIGNING == 'true' }}

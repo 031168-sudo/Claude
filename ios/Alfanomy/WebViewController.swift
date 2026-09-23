@@ -17,7 +17,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate {
         webView.allowsBackForwardNavigationGestures = true
         view.addSubview(webView)
 
-        if let indexUrl = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "Resources") {
+        if let indexUrl = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "web") {
             webView.loadFileURL(indexUrl, allowingReadAccessTo: indexUrl.deletingLastPathComponent())
         }
 
