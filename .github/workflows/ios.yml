@@ -40,14 +40,11 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      # Дешёвая проверка на будущее: Alfanomy/Resources должна попадать в
-      # Copy Bundle Resources как отдельная запись (когда-то полностью
-      # выпадала из-за пересечения путей с sources - см. project.yml).
+      # Дешёвая проверка на будущее: Resources должна попадать в Copy Bundle
+      # Resources как отдельная запись (раньше полностью выпадала из-за
+      # пересечения путей между sources и resources - см. project.yml).
       - name: Inspect generated Xcode project
-        run: |
-          echo "--- full generated project.pbxproj ---"
-          cat Alfanomy.xcodeproj/project.pbxproj
-          true
+        run: grep -n "Resources" Alfanomy.xcodeproj/project.pbxproj || true
 
       # Собираем для симулятора всегда - подписи для этого не нужно, это
       # быстрая проверка, что проект вообще компилируется.

@@ -11,25 +11,19 @@ targets:
   Alfanomy:
     type: application
     platform: iOS
-    # Перечисляем Swift-файлы явно, а не всю папку Alfanomy с excludes:
-    # ["Resources/**"] - при пересечении путей (sources исключает Resources/,
-    # а resources отдельно ссылается на Alfanomy/Resources) XcodeGen молча
-    # выбрасывал всю resources-запись Alfanomy/Resources из проекта целиком
-    # (подтверждено печатью сгенерированного project.pbxproj в CI - там не
-    # было вообще никакого упоминания Alfanomy/Resources). Явный список
-    # исходников убирает это пересечение путей.
     sources:
-      - path: Alfanomy/AppDelegate.swift
-      - path: Alfanomy/PushToken.swift
-      - path: Alfanomy/WebViewController.swift
+      - path: Alfanomy
     resources:
-      # type: folder заставляет Xcode подключить это как единую "синюю папку"
-      # (folder reference), сохраняющую структуру Resources/... внутри бандла
-      # приложения. Без этого XcodeGen по умолчанию разворачивает содержимое
-      # плоским списком файлов в корень бандла - тогда WebViewController.swift
-      # не находит index.html через subdirectory: "Resources", и WebView
-      # остаётся пустым (белый экран) навсегда.
-      - path: Alfanomy/Resources
+      # Resources/ лежит РЯДОМ с Alfanomy (не внутри неё) специально: когда
+      # она была вложена в Alfanomy (sources) и одновременно указана здесь
+      # как resources-запись, XcodeGen вообще не добавлял её в проект - ни
+      # как папку, ни развёрнутой плоским списком, вообще никак (проверено
+      # печатью сгенерированного project.pbxproj в CI). Убрав пересечение
+      # путей между sources и resources, проблема ушла. type: folder
+      # сохраняет структуру Resources/... внутри бандла приложения - без
+      # этого WebViewController.swift не находит index.html через
+      # subdirectory: "Resources", и WebView остаётся пустым навсегда.
+      - path: Resources
         type: folder
       - path: Alfanomy/Assets.xcassets
       - path: Alfanomy/GoogleService-Info.plist
