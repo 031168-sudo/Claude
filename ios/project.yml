@@ -16,7 +16,14 @@ targets:
         excludes:
           - "Resources/**"
     resources:
+      # type: folder заставляет Xcode подключить это как единую "синюю папку"
+      # (folder reference), сохраняющую структуру Resources/... внутри бандла
+      # приложения. Без этого XcodeGen по умолчанию разворачивает содержимое
+      # плоским списком файлов в корень бандла - тогда WebViewController.swift
+      # не находит index.html через subdirectory: "Resources", и WebView
+      # остаётся пустым (белый экран) навсегда.
       - path: Alfanomy/Resources
+        type: folder
       - path: Alfanomy/Assets.xcassets
       - path: Alfanomy/GoogleService-Info.plist
     dependencies:
