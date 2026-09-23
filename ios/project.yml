@@ -14,22 +14,29 @@ targets:
     sources:
       - path: Alfanomy
     resources:
-      # Resources/ лежит РЯДОМ с Alfanomy (не внутри неё) специально: когда
-      # она была вложена в Alfanomy (sources) и одновременно указана здесь
-      # как resources-запись, XcodeGen вообще не добавлял её в проект - ни
-      # как папку, ни развёрнутой плоским списком, вообще никак (проверено
-      # печатью сгенерированного project.pbxproj в CI). Убрав пересечение
-      # путей между sources и resources, проблема ушла. type: folder
-      # сохраняет структуру Resources/... внутри бандла приложения - без
-      # этого WebViewController.swift не находит index.html через
-      # subdirectory: "Resources", и WebView остаётся пустым навсегда.
-      - path: Resources
-        type: folder
       - path: Alfanomy/Assets.xcassets
       - path: Alfanomy/GoogleService-Info.plist
     dependencies:
       - package: FirebaseSDK
         product: FirebaseMessaging
+    # Веб-приложение (Resources/, 273 файла: index.html, code.js, картинки,
+    # вложенные папки) копируется отдельным shell-скриптом, а не через
+    # декларативный "resources: - path: Resources, type: folder" -
+    # последнее в установленной версии XcodeGen (2.46.0) тихо отбрасывало
+    # всю запись целиком без единой ошибки (подтверждено печатью
+    # сгенерированного project.pbxproj и прямым осмотром собранного .app в
+    # CI - несмотря на type: folder, Resources ни разу не появилась в
+    # бандле, хотя соседние resources-записи без type: folder работали).
+    # cp -R гарантированно сохраняет структуру Resources/... внутри
+    # бандла, которую ищет WebViewController.swift.
+    postBuildScripts:
+      - name: Copy web app Resources
+        script: |
+          set -e
+          DEST="$CODESIGNING_FOLDER_PATH/Resources"
+          rm -rf "$DEST"
+          mkdir -p "$DEST"
+          cp -R "$SRCROOT/Resources/." "$DEST/"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ru.alfanomy.mapp
