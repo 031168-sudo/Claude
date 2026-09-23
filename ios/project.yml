@@ -11,10 +11,17 @@ targets:
   Alfanomy:
     type: application
     platform: iOS
+    # Перечисляем Swift-файлы явно, а не всю папку Alfanomy с excludes:
+    # ["Resources/**"] - при пересечении путей (sources исключает Resources/,
+    # а resources отдельно ссылается на Alfanomy/Resources) XcodeGen молча
+    # выбрасывал всю resources-запись Alfanomy/Resources из проекта целиком
+    # (подтверждено печатью сгенерированного project.pbxproj в CI - там не
+    # было вообще никакого упоминания Alfanomy/Resources). Явный список
+    # исходников убирает это пересечение путей.
     sources:
-      - path: Alfanomy
-        excludes:
-          - "Resources/**"
+      - path: Alfanomy/AppDelegate.swift
+      - path: Alfanomy/PushToken.swift
+      - path: Alfanomy/WebViewController.swift
     resources:
       # type: folder заставляет Xcode подключить это как единую "синюю папку"
       # (folder reference), сохраняющую структуру Resources/... внутри бандла

@@ -40,23 +40,13 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      # Диагностика: .ipa из сборки #15 не содержит ВООБЩЕ НИЧЕГО из
-      # Alfanomy/Resources (ни одного из 273 файлов, даже не плоским
-      # списком) - значит XcodeGen не добавил эту resources-запись в
-      # Copy Bundle Resources build phase вообще, а не просто "развернул
-      # плоско". Печатаем сырой сгенерированный project.pbxproj, чтобы
-      # увидеть, что XcodeGen реально сделал с этой записью, вместо
-      # очередной догадки вслепую.
+      # Дешёвая проверка на будущее: Alfanomy/Resources должна попадать в
+      # Copy Bundle Resources как отдельная запись (когда-то полностью
+      # выпадала из-за пересечения путей с sources - см. project.yml).
       - name: Inspect generated Xcode project
         run: |
-          echo "--- PBXFileReference / PBXBuildFile mentioning Resources ---"
-          grep -n "Resources" Alfanomy.xcodeproj/project.pbxproj | head -60
           echo "--- Resources build phase section ---"
-          grep -n "PBXResourcesBuildPhase" -A 40 Alfanomy.xcodeproj/project.pbxproj | head -80
-          # Временно останавливаем сборку здесь, чтобы получить короткий,
-          # полностью читаемый лог для отладки (полный verbose-лог сборки
-          #/архивации слишком большой, чтобы выкачать нужный фрагмент).
-          exit 1
+          grep -n "PBXResourcesBuildPhase" -A 10 Alfanomy.xcodeproj/project.pbxproj
 
       # Собираем для симулятора всегда - подписи для этого не нужно, это
       # быстрая проверка, что проект вообще компилируется.
