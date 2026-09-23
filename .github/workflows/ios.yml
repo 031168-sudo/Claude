@@ -53,6 +53,10 @@ jobs:
           grep -n "Resources" Alfanomy.xcodeproj/project.pbxproj | head -60
           echo "--- Resources build phase section ---"
           grep -n "PBXResourcesBuildPhase" -A 40 Alfanomy.xcodeproj/project.pbxproj | head -80
+          # Временно останавливаем сборку здесь, чтобы получить короткий,
+          # полностью читаемый лог для отладки (полный verbose-лог сборки
+          #/архивации слишком большой, чтобы выкачать нужный фрагмент).
+          exit 1
 
       # Собираем для симулятора всегда - подписи для этого не нужно, это
       # быстрая проверка, что проект вообще компилируется.
