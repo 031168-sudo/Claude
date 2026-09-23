@@ -125,17 +125,32 @@ async function sendSignalPushNotification(cid, deviceName, sevenSignal) {
   const tokens = await getPushTokensByUserIds(userIds);
   if (!tokens.length) return;
 
-  // ВАЖНО: используем только "data" payload (без "notification"), чтобы
-  // приложение получало push и показывало уведомление само даже когда
-  // полностью закрыто (Android доставляет data-сообщения в
-  // FirebaseMessagingService.onMessageReceived даже без открытого приложения,
-  // если только устройство не в глубоком Doze/энергосбережении).
+  const title = deviceName || 'Alfanomy';
+  const body = 'Новое сообщение от устройства';
+
+  // ВАЖНО: для Android - только "data" payload (без "notification"), чтобы
+  // приложение показывало уведомление само даже когда полностью закрыто
+  // (Android доставляет data-сообщения в FirebaseMessagingService.onMessageReceived
+  // даже без открытого приложения, если только устройство не в глубоком Doze).
+  //
+  // Для iOS data-сообщения недостаточно: iPhone покажет уведомление только
+  // если в нём есть блок apns.payload.aps.alert. Блок "apns" применяется
+  // только к iOS-токенам, Android его игнорирует - поэтому его можно
+  // смело слать всем токенам разом, не разделяя их по платформе.
   const message = {
     data: {
-      title: deviceName || 'Alfanomy',
-      body: 'Новое сообщение от устройства',
+      title,
+      body,
       cid: String(cid),
       messageId: String(sevenSignal.MESSAGE_ID || ''),
+    },
+    apns: {
+      payload: {
+        aps: {
+          alert: { title, body },
+          sound: 'default',
+        },
+      },
     },
     tokens,
   };

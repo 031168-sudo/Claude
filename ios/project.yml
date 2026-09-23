@@ -51,6 +51,9 @@ targets:
       # здесь, в настройках именно этого таргета, SPM-пакеты не затрагиваются.
       configs:
         Release:
+          # Без aps-environment в подписи iOS не выдаёт APNs-токен, и push
+          # на iPhone не приходят вообще, хотя профиль его разрешает.
+          CODE_SIGN_ENTITLEMENTS: Alfanomy/Alfanomy.entitlements
           CODE_SIGN_STYLE: Manual
           CODE_SIGN_IDENTITY: "Apple Distribution"
           DEVELOPMENT_TEAM: 6KFX74C58U

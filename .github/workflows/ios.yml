@@ -111,6 +111,15 @@ jobs:
           test -f "$APP_PATH/web/index.html" || { echo "web/index.html missing from app bundle"; ls -la "$APP_PATH"; exit 1; }
           echo "web/ bundled: $(find "$APP_PATH/web" -type f | wc -l) files"
 
+      # Без aps-environment в подписи push на iPhone не приходят совсем,
+      # а сборка при этом проходит "успешно" - валим CI явно.
+      - name: Verify push entitlement is signed in
+        if: ${{ env.HAS_IOS_SIGNING == 'true' }}
+        run: |
+          APP_PATH="$RUNNER_TEMP/Alfanomy.xcarchive/Products/Applications/Alfanomy.app"
+          codesign -d --entitlements - "$APP_PATH" 2>/dev/null | tee /dev/stderr | grep -q "aps-environment" \
+            || { echo "aps-environment entitlement missing from signed app"; exit 1; }
+
       - name: Export signed IPA
         if: ${{ env.HAS_IOS_SIGNING == 'true' }}
         run: |
