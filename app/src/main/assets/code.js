@@ -39,6 +39,8 @@ var gpsLbs = (function () {
         btnLbs: { en: "Position by LBS. Tap to show both GPS and LBS", ru: "Положение по LBS. Нажмите, чтобы показать GPS и LBS вместе" },
         btnBoth: { en: "GPS and LBS positions together. Tap to show GPS", ru: "Положение по GPS и по LBS вместе. Нажмите, чтобы показать GPS" },
         noValidGps: { en: "No valid GPS position, LBS is shown", ru: "Нет достоверного положения по GPS, показано по LBS" },
+        noGpsPos: { en: "No GPS position, LBS is shown", ru: "Нет позиции GPS, показано по LBS" },
+        noLbsPos: { en: "No LBS position, GPS is shown", ru: "Нет позиции LBS, показано по GPS" },
         dSat: { en: "Satellites", ru: "Спутники" },
         dDist: { en: "GPS to LBS", ru: "GPS–LBS" },
         dAge: { en: "GPS age", ru: "Возраст GPS" },
@@ -201,22 +203,28 @@ var gpsLbs = (function () {
                 var k = look[mode] || look.gps;
                 b.text(k.label).attr("title", tr(k.title)).css({ "background-color": k.bg, "border-color": k.border });
             };
-            var warn = function () {
-                msg.text(tr("noValidGps")).show();
+            var warn = function (k) {
+                msg.text(tr(k)).show();
                 clearTimeout(timer);
                 timer = setTimeout(function () { msg.fadeOut(); }, 4e3);
             };
+            var fallBack = function (to, k) { mode = to; show(); onChange(mode); warn(k); };
+            // Режим GPS - только если хоть одна точка показана по GPS; режим G+L - только если
+            // есть и позиции GPS, и позиции LBS. Иначе предупреждаем и показываем то, что есть.
             var apply = function (init) {
                 init || onChange(mode);
-                var st = "gps" === mode && peek && peek(mode);
+                var m0 = mode, st = ("gps" === mode || "both" === mode) && peek && peek(mode);
                 if (!st) return;
-                var all = 0, gps = 0, sub = st.subscribe(function (x) {
+                var all = 0, gps = 0, lbs = 0, sub = st.subscribe(function (x) {
                     var p = x && x.params;
-                    if (p && p.source) { all++; "gps" === p.source && gps++; }
+                    if (p && p.source) { all++; "gps" === p.source ? gps++ : lbs++; }
                 });
                 setTimeout(function () {
                     sub.dispose();
-                    if ("gps" === mode && all && !gps) { mode = "lbs"; show(); onChange(mode); warn(); }
+                    if (mode !== m0 || !all) return;
+                    if ("gps" === mode && !gps) fallBack("lbs", "noValidGps");
+                    else if ("both" === mode && !gps) fallBack("lbs", "noGpsPos");
+                    else if ("both" === mode && !lbs) fallBack("gps", "noLbsPos");
                 }, C.gpsCheckDelayMs);
             };
             show();
@@ -229,7 +237,7 @@ var gpsLbs = (function () {
                 apply();
             }).dblclick(function (e) { e.stopPropagation(); });
             msg.click(function (e) { e.stopPropagation(); msg.hide(); });
-            setTimeout(function () { "gps" === mode && apply(!0); }, 0);
+            setTimeout(function () { apply(!0); }, 0);
             return w[0];
         }
     };
