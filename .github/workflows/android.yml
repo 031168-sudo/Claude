@@ -2,11 +2,14 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, 'release/**' ]
+    # Тег вида v2.0 - финальный релиз версии
+    tags: [ 'v*' ]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  # write - чтобы выложить APK в GitHub Releases
+  contents: write
 
 jobs:
   build:
@@ -83,3 +86,40 @@ jobs:
           path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
+      # GitHub Release со ссылкой на скачивание APK:
+      # - ветка release/** - предварительная (pre-release) тестовая сборка;
+      # - тег v* - финальный релиз версии.
+      # В магазины (RuStore, App Store) отсюда ничего не загружается.
+      - name: Prepare GitHub Release
+        id: rel
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/heads/release/') }}
+        run: |
+          VERSION=$(sed -n "s/.*versionName '\(.*\)'.*/\1/p" app/build.gradle)
+          BUILD=${{ github.run_number }}
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+            echo "name=Версия $VERSION (сборка $BUILD)" >> "$GITHUB_OUTPUT"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=v$VERSION-test-$BUILD" >> "$GITHUB_OUTPUT"
+            echo "name=Версия $VERSION, тестовая сборка $BUILD" >> "$GITHUB_OUTPUT"
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          fi
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/*.apk "dist/AlfaSputnik-$VERSION-$BUILD-debug.apk"
+          if ls app/build/outputs/apk/release/*.apk >/dev/null 2>&1; then
+            cp app/build/outputs/apk/release/*.apk "dist/AlfaSputnik-$VERSION-$BUILD-release.apk"
+          fi
+          ls -l dist
+
+      - name: Publish GitHub Release
+        if: ${{ steps.rel.outputs.tag != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.rel.outputs.tag }}
+          name: ${{ steps.rel.outputs.name }}
+          target_commitish: ${{ github.sha }}
+          prerelease: ${{ steps.rel.outputs.prerelease }}
+          generate_release_notes: true
+          files: dist/*.apk
+          fail_on_unmatched_files: true
