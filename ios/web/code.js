@@ -4,6 +4,8 @@ var buildVersion = "1.2.8";
 // Все пороги собраны здесь, в коде проверок чисел нет.
 var gpsCheck = {
     staleMs: 6e5,               // GPS_TIME старше SERVER_TIME больше чем на 10 минут - GPS недействителен
+    maxAheadMs: 12e4,           // GPS_TIME позже SERVER_TIME больше чем на 2 минуты - GPS недействителен
+                                // (испорченная GPS-запись: в таких точках и координаты оказывались неверными)
     maxGpsLbsKm: 3,             // GPS дальше 3 км от LBS - GPS подозрительный (одного этого признака достаточно)
     minSatellites: 4,           // спутников меньше 4 - признак подозрительного GPS
     maxJumpKmh: 200,            // скорость между соседними точками больше 200 км/ч - "прыжок"
@@ -27,6 +29,7 @@ var gpsLbs = (function () {
         noSatellites: { en: "no satellites", ru: "нет спутников" },
         noGps: { en: "no GPS coordinates", ru: "нет координат GPS" },
         stale: { en: "GPS data is out of date", ru: "данные GPS устарели" },
+        ahead: { en: "GPS time is ahead of server time", ru: "время GPS впереди времени сервера" },
         fewSatellites: { en: "few satellites", ru: "мало спутников" },
         farFromLbs: { en: "far from LBS", ru: "далеко от LBS" },
         jump: { en: "position jump", ru: "скачок положения" },
@@ -77,6 +80,7 @@ var gpsLbs = (function () {
         if (!s.SATEL_NUM || !sat) reasons.push("noSatellites");
         if (known && !ok(g)) reasons.push("noGps");
         if (!s.GPS_TIME || !s.SERVER_TIME || isNaN(age) || age > C.staleMs) reasons.push("stale");
+        if (age < -C.maxAheadMs) reasons.push("ahead");
         if (reasons.length) {
             return { state: "invalid", source: hasLbs || !known ? "lbs" : "gps", text: hasLbs || !known ? "invalid" : "invalidNoLbs", reasons: reasons, m: m };
         }
