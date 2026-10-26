@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Слой_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="71px" height="68.328px" viewBox="11.941 24.174 71 68.328" enable-background="new 11.941 24.174 71 68.328"
+	 xml:space="preserve">
+<g>
+	<path fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
+		M64.401,86.38c5.751,0,10.407-4.508,10.407-10.069c0-4.31-2.796-7.985-6.729-9.423V53.669h6.836c2.106,0,3.812-1.652,3.812-3.69
+		c0-2.043-1.705-3.694-3.812-3.694H68.08V38.15h9.65c2.101,0,3.808-1.654,3.808-3.692s-1.707-3.689-3.808-3.689h-9.65v-1.905
+		c0-2.038-1.708-3.689-3.813-3.689c-2.1,0-3.812,1.651-3.812,3.689v5.588v0.007c0,0.006,0,0.006,0,0.006v32.521
+		c-3.793,1.511-6.461,5.11-6.461,9.326C53.994,81.872,58.647,86.38,64.401,86.38z"/>
+	
+		<polyline fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="
+		81.941,61.252 51.191,91.502 12.941,91.502 	"/>
+</g>
+</svg>
