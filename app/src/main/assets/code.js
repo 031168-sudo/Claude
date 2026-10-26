@@ -13,8 +13,8 @@ var gpsCheck = {
     minSuspiciousSigns: 2,      // если GPS не дальше 3 км от LBS (или LBS нет): сколько из признаков
                                 // "мало спутников" и "прыжок" нужно, чтобы считать GPS подозрительным
     autoSwitchSuspicious: true, // при подозрительном GPS сразу показывать положение по LBS
-    showDetails: true,          // показывать в карточке цифры проверки (спутники, расстояние GPS-LBS, координаты)
-    showRawTimes: true,         // показывать в карточке время так, как его прислал сервер (SERVER_TIME, GPS_TIME, dt)
+    showDetails: false,         // служебное (для разбора): цифры проверки в карточке и поля точки трека с сервера
+    showRawTimes: false,        // служебное (для разбора): время так, как его прислал сервер (SERVER_TIME, GPS_TIME, dt)
     gpsCheckDelayMs: 700        // сколько ждать точки после переключения на GPS, прежде чем решить, что GPS нет
 };
 var gpsLbs = (function () {
@@ -141,14 +141,15 @@ var gpsLbs = (function () {
         evaluate: evaluate,
         // Окно точки трека (проверка): оценка GPS и все поля, которые прислал сервер.
         trackInfo: function (ev, l) {
-            if (!C.showDetails) return "";
+            var line = api.statusLine({ _gps: info(ev) }, l);
+            if (!C.showDetails) return line;
             var rows = [], add = function (o, pre) {
                 for (var k in o) if (o.hasOwnProperty(k) && k !== "sevenSignal" && typeof o[k] !== "function")
                     rows.push(esc(pre + k) + ": " + esc("object" === typeof o[k] ? JSON.stringify(o[k]) : o[k]));
             };
             add(ev, "");
             if (ev.sevenSignal) add(ev.sevenSignal, "sevenSignal.");
-            return api.statusLine({ _gps: info(ev) }, l) +
+            return line +
                 '<div style="font-size: 0.85em; color: gray; word-break: break-all;">' + rows.join("<br>") + "</div>";
         },
         info: info,
