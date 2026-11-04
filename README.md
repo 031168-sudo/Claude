@@ -21,6 +21,20 @@ Android-обёртка (WebView) для веб-интерфейса GPS-мони
 CI (`.github/workflows/android.yml`) собирает APK на каждый пуш в
 `main`/`master`, в ветки `release/**` и на теги `v*`, и кладёт его в артефакты сборки.
 
+## iPhone: загрузка в TestFlight
+
+`.github/workflows/ios.yml` при каждом пуше собирает подписанный `.ipa` (артефакт `Alfanomy-ipa`).
+В TestFlight сборка загружается только по запросу:
+
+- вручную: Actions → «Build iOS App» → Run workflow → галочка «Загрузить сборку в TestFlight»;
+- или изменить (создать) файл `.github/testflight-trigger.txt` и запушить.
+
+Загрузка идёт через App Store Connect API (как в DateBook / Palm-calendar). Нужны секреты репозитория
+`ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` — ключ App Store Connect API той же команды Apple, где
+лежит приложение `ru.alfanomy.mapp`. После загрузки `.github/scripts/asc_distribute.py` ждёт
+обработки, добавляет сборку во внешние группы тестировщиков и отправляет на проверку Apple.
+В App Store (для всех) версию отправляет человек в App Store Connect.
+
 ## Версии и релизы
 
 - `main` — то, что опубликовано в магазинах. Код опубликованной версии 1.0
